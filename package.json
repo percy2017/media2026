@@ -8,7 +8,8 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js",
+    "create-admin": "node scripts/create-admin.js"
   },
   "dependencies": {
     "better-sqlite3": "^12.6.2",
