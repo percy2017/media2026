@@ -33,9 +33,9 @@
                         <span class="fw-semibold">Media2026</span>
                     </a>
                     <div class="d-flex align-items-center gap-2">
-                        <!-- Mostrar token de usuario -->
+                        <!-- Mostrar nombre de usuario -->
                         <span class="text-white me-2 d-none d-md-inline">
-                            <i class="bi bi-person-circle me-1"></i><%= user.token %>
+                            <i class="bi bi-person-circle me-1"></i><%= user.name || 'Usuario' %>
                             <% if (user.role === 'admin') { %>
                                 <span class="badge bg-warning text-dark ms-1">Admin</span>
                             <% } %>

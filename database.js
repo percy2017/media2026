@@ -6,6 +6,7 @@ import Database from 'better-sqlite3';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import crypto from 'crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -73,6 +74,24 @@ function initializeDatabase() {
     }
 
     console.log('✓ Base de datos inicializada correctamente');
+    
+    // Migrar tokens existentes a formato SHA-1
+    migrateTokens();
+}
+
+// Migrar tokens existentes a formato SHA-1
+export function migrateTokens() {
+    const users = db.prepare('SELECT id, token FROM users').all();
+    
+    for (const user of users) {
+        // Si el token no tiene formato SHA-1 (40 caracteres), actualizarlo
+        if (!user.token || user.token.length !== 40 || !/^[a-f0-9]{40}$/.test(user.token)) {
+            const newToken = generateToken();
+            db.prepare('UPDATE users SET token = ? WHERE id = ?').run(newToken, user.id);
+            console.log(`✓ Token actualizado para usuario ID ${user.id}: ${newToken}`);
+        }
+    }
+    console.log('✓ Migración de tokens completada');
 }
 
 // Funciones de usuario
@@ -84,7 +103,7 @@ export function getUserByToken(token) {
 
 // Buscar usuario por ID
 export function getUserById(id) {
-    return db.prepare('SELECT id, token, role, ruta, created_at FROM users WHERE id = ?').get(id);
+    return db.prepare('SELECT id, token, name, role, ruta, created_at FROM users WHERE id = ?').get(id);
 }
 
 // Obtener todos los usuarios (solo admin)
@@ -92,21 +111,18 @@ export function getAllUsers() {
     return db.prepare('SELECT id, token, name, role, ruta, created_at FROM users ORDER BY created_at DESC').all();
 }
 
-// Generar token aleatorio corto (8 caracteres)
-function generateShortToken() {
-    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    let token = '';
-    for (let i = 0; i < 8; i++) {
-        token += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return token;
+// Generar token SHA-1 (40 caracteres hexadecimal)
+function generateToken() {
+    return crypto.createHash('sha1')
+        .update(crypto.randomBytes(16).toString('hex'))
+        .digest('hex');
 }
 
 // Crear usuario
 export function createUser(token, role = 'cliente', ruta = '', name = '') {
-    // Si no se proporciona token, generar uno corto
+    // Si no se proporciona token, generar uno SHA-1
     if (!token) {
-        token = generateShortToken();
+        token = generateToken();
     }
     const stmt = db.prepare(`
         INSERT INTO users (token, name, role, ruta)

@@ -288,6 +288,7 @@ app.post('/login', (req, res) => {
     req.session.user = {
         id: user.id,
         token: user.token,
+        name: user.name || 'Usuario',
         role: user.role,
         ruta: user.ruta
     };
@@ -370,15 +371,22 @@ app.get('/profile', requireAuth, (req, res) => {
     });
 });
 
-// Ruta /profile/update - Actualizar mi perfil (solo ruta)
+// Ruta /profile/update - Actualizar mi perfil (nombre y ruta)
 app.post('/profile/update', requireAuth, express.json(), (req, res) => {
     const userId = req.session.user.id;
-    const { ruta } = req.body;
+    const { name, ruta } = req.body;
     
     try {
-        updateUser(userId, { ruta });
+        const data = {};
+        if (ruta !== undefined) data.ruta = ruta;
+        if (name !== undefined) data.name = name;
+        
+        updateUser(userId, data);
+        
         // Actualizar la sesión
-        req.session.user.ruta = ruta;
+        if (ruta) req.session.user.ruta = ruta;
+        if (name) req.session.user.name = name;
+        
         res.json({ success: true, message: 'Perfil actualizado' });
     } catch (error) {
         res.status(500).json({ error: 'Error al actualizar perfil' });

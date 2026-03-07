@@ -195,9 +195,15 @@
                 <!-- Edit Form -->
                 <form id="profileForm">
                     <div class="mb-3">
+                        <label for="userName" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="userName" value="<%= user.name || '' %>" placeholder="Tu nombre">
+                        <div class="form-text">Nombre que se mostrará en la aplicación.</div>
+                    </div>
+                    
+                    <div class="mb-3">
                         <label for="newRuta" class="form-label">Nueva Ruta (nombre de carpeta) *</label>
                         <input type="text" class="form-control" id="newRuta" value="<%= user.ruta || '' %>" placeholder="mi_carpeta" required>
-                        <div class="form-text">Ruta obligatoria para tus archivos.</div>
+                        <div class="form-text para tus archivos.">Ruta obligatoria</div>
                     </div>
                     
                     <div class="d-flex gap-2">
@@ -218,6 +224,7 @@
     
     <script>
         function updateProfile() {
+            const userName = document.getElementById('userName').value.trim();
             const newRuta = document.getElementById('newRuta').value.trim();
             
             if (!newRuta) {
@@ -231,6 +238,7 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ 
+                    name: userName,
                     ruta: newRuta 
                 })
             })

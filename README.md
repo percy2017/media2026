@@ -86,7 +86,7 @@ media2026/
     ├── index.ejs       # Página de inicio
     ├── files.ejs       # Gestor de archivos
     ├── login.ejs       # Página de login
-    ├── register.ejs    # Página de registro
+    ├── profile.ejs     # Perfil de usuario
     ├── admin-users.ejs # Gestión de usuarios (admin)
     ├── about.ejs       # Acerca de
     └── contact.ejs     # Contacto
@@ -101,8 +101,6 @@ media2026/
 | GET | `/` | Redirige a `/login` o `/files` |
 | GET | `/login` | Página de login |
 | POST | `/login` | Procesa el login |
-| GET | `/register` | Página de registro |
-| POST | `/register` | Procesa el registro |
 | GET | `/logout` | Cierra sesión |
 | GET | `/about` | Página Acerca de |
 | GET | `/contact` | Página de Contacto |
@@ -116,6 +114,8 @@ media2026/
 | POST | `/upload` | Sube archivos |
 | POST | `/create-folder` | Crea una carpeta |
 | DELETE | `/delete/:filename` | Elimina un archivo |
+| GET | `/profile` | Perfil de usuario |
+| POST | `/profile/update` | Actualizar perfil |
 
 ### Rutas de Administrador (solo admin)
 
@@ -124,7 +124,7 @@ media2026/
 | GET | `/admin/users` | Lista de usuarios |
 | POST | `/admin/users/create` | Crear usuario |
 | POST | `/admin/users/:id/delete` | Eliminar usuario |
-| POST | `/admin/users/:id/change-role` | Cambiar rol de usuario |
+| POST | `/admin/users/:id/update` | Actualizar usuario |
 
 ## Uso
 
@@ -136,9 +136,13 @@ media2026/
 
 ### Token de Administrador por Defecto
 
-Al iniciar la aplicación por primera vez, se crea un token de administrador:
+Al iniciar la aplicación por primera vez, se crea un usuario administrador con un token SHA-1:
 
-- **Token**: `admin`
+- **Token**: `0a69a0d2bf88ed822615e6016c49d3683036a11a`
+- **Nombre**: `admin`
+- **Rol**: `admin`
+
+El token es un hash SHA-1 de 40 caracteres.
 
 ### Registro de Usuarios
 
