@@ -190,6 +190,7 @@
                              data-size="<%= file.size %>"
                              data-date="<%= file.date %>"
                              data-url="<%= file.url %>"
+                             data-current-folder="<%= currentFolder %>"
                              style="animation-delay: <%= index * 0.03 %>s">
                             <div class="card file-card h-100 <%= file.type === 'folder' ? 'folder-card' : '' %> <%= file.type === 'video' ? 'video-card' : '' %> <%= file.type === 'audio' ? 'audio-card' : '' %>">
                                 <% if (file.type === 'folder') { %>
@@ -221,7 +222,7 @@
                                     </p>
                                     <div class="file-grid-actions mt-2">
                                         <% if (file.type === 'folder') { %>
-                                            <button class="btn btn-sm btn-outline-primary" title="Abrir" onclick="event.stopPropagation(); window.location.href='/files?folder=<%= encodeURIComponent(file.name) %>'">
+                                            <button class="btn btn-sm btn-outline-primary" title="Abrir" onclick="event.stopPropagation(); window.location.href='/files?folder=<%= currentFolder ? encodeURIComponent(currentFolder + '/' + file.name) : encodeURIComponent(file.name) %>'">
                                                 <i class="bi bi-folder2-open"></i>
                                             </button>
                                         <% } else { %>
@@ -238,12 +239,13 @@
                         </div>
                         
                         <!-- List View Row -->
-                        <div class="file-item file-list-row <%= file.type === 'folder' ? 'folder-row' : '' %>" 
-                             data-name="<%= file.name %>" 
+                        <div class="file-item file-list-row <%= file.type === 'folder' ? 'folder-row' : '' %>"
+                             data-name="<%= file.name %>"
                              data-type="<%= file.type %>"
                              data-size="<%= file.size %>"
                              data-date="<%= file.date %>"
-                             data-url="<%= file.url %>">
+                             data-url="<%= file.url %>"
+                             data-current-folder="<%= currentFolder %>">
                             <% if (file.type === 'folder') { %>
                                 <div class="file-icon-cell">
                                     <i class="bi bi-folder-fill"></i>
@@ -268,7 +270,7 @@
                             <div class="file-size"><%= file.type === 'folder' ? '-' : file.size %></div>
                             <div class="file-actions">
                                 <% if (file.type === 'folder') { %>
-                                    <button class="btn btn-sm btn-outline-primary" title="Abrir" onclick="window.location.href='/files?folder=<%= encodeURIComponent(file.name) %>'">
+                                    <button class="btn btn-sm btn-outline-primary" title="Abrir" onclick="window.location.href='/files?folder=<%= currentFolder ? encodeURIComponent(currentFolder + '/' + file.name) : encodeURIComponent(file.name) %>'">
                                         <i class="bi bi-folder2-open"></i>
                                     </button>
                                 <% } else { %>

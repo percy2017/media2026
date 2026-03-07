@@ -537,8 +537,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // If it's a folder, navigate to it instead of opening sidebar
             if (fileType === 'folder') {
                 const folderName = fileItem.dataset.name;
+                const currentFolder = fileItem.dataset.currentFolder || '';
                 if (folderName) {
-                    window.location.href = '/files?folder=' + encodeURIComponent(folderName);
+                    const fullPath = currentFolder ? currentFolder + '/' + folderName : folderName;
+                    window.location.href = '/files?folder=' + encodeURIComponent(fullPath);
                 }
                 return;
             }
@@ -710,8 +712,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // If it's a folder, navigate to it
             if (fileType === 'folder') {
                 const folderName = this.dataset.name;
+                const currentFolder = this.dataset.currentFolder || '';
                 if (folderName) {
-                    window.location.href = '/files?folder=' + encodeURIComponent(folderName);
+                    const fullPath = currentFolder ? currentFolder + '/' + folderName : folderName;
+                    window.location.href = '/files?folder=' + encodeURIComponent(fullPath);
                 }
                 return;
             }
