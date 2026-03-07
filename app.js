@@ -320,6 +320,17 @@ app.post('/admin/users/create', requireAuth, requireAdmin, express.json(), (req,
         return res.status(400).json({ error: 'Token es requerido' });
     }
     
+    // Crear el directorio del usuario si no existe
+    if (ruta && !fs.existsSync(ruta)) {
+        try {
+            fs.mkdirSync(ruta, { recursive: true });
+            console.log('📁 Directorio creado:', ruta);
+        } catch (dirError) {
+            console.error('Error al crear directorio:', dirError);
+            return res.status(500).json({ error: 'No se pudo crear el directorio: ' + dirError.message });
+        }
+    }
+    
     const result = createUser(token, role || 'cliente', ruta || '', name || '');
     
     if (!result.success) {
@@ -380,7 +391,18 @@ app.post('/profile/update', requireAuth, express.json(), (req, res) => {
     
     try {
         const data = {};
-        if (ruta !== undefined) data.ruta = ruta;
+        if (ruta !== undefined) {
+            // Crear el directorio si no existe
+            if (ruta && !fs.existsSync(ruta)) {
+                try {
+                    fs.mkdirSync(ruta, { recursive: true });
+                } catch (dirError) {
+                    console.error('Error al crear directorio:', dirError);
+                    return res.status(500).json({ error: 'No se pudo crear el directorio: ' + dirError.message });
+                }
+            }
+            data.ruta = ruta;
+        }
         if (name !== undefined) data.name = name;
         
         updateUser(userId, data);
