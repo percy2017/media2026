@@ -416,6 +416,8 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <script>
         // Generate random token
@@ -430,6 +432,7 @@
         
         // Show create user modal
         function showCreateUserModal() {
+            document.getElementById('newName').value = '';
             document.getElementById('newToken').value = '';
             document.getElementById('newRuta').value = '';
             document.getElementById('newRole').value = 'cliente';
@@ -438,9 +441,10 @@
         }
         
         // Show edit user modal
-        function showEditUserModal(id, token, ruta, role) {
+        function showEditUserModal(id, token, name, ruta, role) {
             document.getElementById('editUserId').value = id;
             document.getElementById('editToken').value = token;
+            document.getElementById('editName').value = name || '';
             document.getElementById('editRuta').value = ruta || '';
             document.getElementById('editRole').value = role;
             const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
@@ -450,6 +454,7 @@
         // Create user
         function createUser() {
             let token = document.getElementById('newToken').value.trim();
+            const name = document.getElementById('newName').value.trim();
             const ruta = document.getElementById('newRuta').value.trim();
             const role = document.getElementById('newRole').value;
             
@@ -463,7 +468,11 @@
             }
             
             if (!ruta) {
-                alert('La ruta es requerida');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Campo requerido',
+                    text: 'La ruta es requerida'
+                });
                 return;
             }
             
@@ -472,20 +481,33 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ token, ruta, role })
+                body: JSON.stringify({ token, name, ruta, role })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Usuario creado exitosamente');
-                    window.location.reload();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Éxito',
+                        text: 'Usuario creado exitosamente'
+                    }).then(() => {
+                        window.location.reload();
+                    });
                 } else {
-                    alert(data.error || 'Error al crear usuario');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.error || 'Error al crear usuario'
+                    });
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error al crear usuario');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al crear usuario'
+                });
             });
         }
         
@@ -493,16 +515,25 @@
         function updateUser() {
             const userId = document.getElementById('editUserId').value;
             const token = document.getElementById('editToken').value.trim();
+            const name = document.getElementById('editName').value.trim();
             const ruta = document.getElementById('editRuta').value.trim();
             const role = document.getElementById('editRole').value;
             
             if (!token) {
-                alert('El token es requerido');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Campo requerido',
+                    text: 'El token es requerido'
+                });
                 return;
             }
             
             if (!ruta) {
-                alert('La ruta es requerida');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Campo requerido',
+                    text: 'La ruta es requerida'
+                });
                 return;
             }
             
@@ -511,20 +542,33 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ token, ruta, role })
+                body: JSON.stringify({ token, name, ruta, role })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Usuario actualizado exitosamente');
-                    window.location.reload();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Éxito',
+                        text: 'Usuario actualizado exitosamente'
+                    }).then(() => {
+                        window.location.reload();
+                    });
                 } else {
-                    alert(data.error || 'Error al actualizar usuario');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.error || 'Error al actualizar usuario'
+                    });
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error al actualizar usuario');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al actualizar usuario'
+                });
             });
         }
         
@@ -536,25 +580,47 @@
                     const userId = this.dataset.id;
                     const token = this.dataset.token;
                     
-                    if (!confirm('¿Estás seguro de que quieres eliminar al usuario "' + token + '"?')) {
-                        return;
-                    }
-                    
-                    fetch('/admin/users/' + userId + '/delete', {
-                        method: 'POST'
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert('Usuario eliminado');
-                            window.location.reload();
-                        } else {
-                            alert(data.error || 'Error al eliminar usuario');
+                    Swal.fire({
+                        title: 'Eliminar usuario',
+                        text: '¿Estás seguro de que quieres eliminar al usuario "' + token + '"?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d63638',
+                        cancelButtonColor: '#50575e',
+                        confirmButtonText: 'Sí, eliminar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            fetch('/admin/users/' + userId + '/delete', {
+                                method: 'POST'
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Eliminado',
+                                        text: 'Usuario eliminado'
+                                    }).then(() => {
+                                        window.location.reload();
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error',
+                                        text: data.error || 'Error al eliminar usuario'
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'Error al eliminar usuario'
+                                });
+                            });
                         }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Error al eliminar usuario');
                     });
                 });
             });
@@ -564,9 +630,10 @@
                 button.addEventListener('click', function() {
                     const id = this.dataset.id;
                     const token = this.dataset.token;
+                    const name = this.dataset.name;
                     const ruta = this.dataset.ruta;
                     const role = this.dataset.role;
-                    showEditUserModal(id, token, ruta, role);
+                    showEditUserModal(id, token, name, ruta, role);
                 });
             });
         });

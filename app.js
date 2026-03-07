@@ -314,13 +314,13 @@ app.get('/admin/users', requireAuth, requireAdmin, (req, res) => {
 
 // Ruta /admin/users - Crear usuario (solo admin)
 app.post('/admin/users/create', requireAuth, requireAdmin, express.json(), (req, res) => {
-    const { token, role, ruta } = req.body;
+    const { token, name, role, ruta } = req.body;
     
     if (!token) {
         return res.status(400).json({ error: 'Token es requerido' });
     }
     
-    const result = createUser(token, role || 'cliente', ruta || '');
+    const result = createUser(token, role || 'cliente', ruta || '', name || '');
     
     if (!result.success) {
         return res.status(400).json({ error: result.error });
@@ -349,10 +349,11 @@ app.post('/admin/users/:id/delete', requireAuth, requireAdmin, express.json(), (
 // Ruta /admin/users/:id/update - Actualizar usuario (solo admin)
 app.post('/admin/users/:id/update', requireAuth, requireAdmin, express.json(), (req, res) => {
     const userId = parseInt(req.params.id);
-    const { token, role, ruta } = req.body;
+    const { token, name, role, ruta } = req.body;
     
     const data = {};
     if (token) data.token = token;
+    if (name !== undefined) data.name = name;
     if (role) data.role = role;
     if (ruta !== undefined) data.ruta = ruta;
     
