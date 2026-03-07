@@ -134,15 +134,16 @@ media2026/
 2. Ingresa tu token de acceso proporcionado por el administrador
 3. Serás redirigido al gestor de archivos
 
-### Token de Administrador por Defecto
+### Token de Administrador
 
-Al iniciar la aplicación por primera vez, se crea un usuario administrador con un token SHA-1:
+El token se genera automáticamente como un hash SHA-1 de 40 caracteres.
 
-- **Token**: `0a69a0d2bf88ed822615e6016c49d3683036a11a`
-- **Nombre**: `admin`
-- **Rol**: `admin`
+**Para crear el admin:**
 
-El token es un hash SHA-1 de 40 caracteres.
+1. **Opción 1:** Inicia el servidor por primera vez (`npm run dev`) y se creará automáticamente
+2. **Opción 2:** Ejecuta `npm run create-admin` para crear/actualizar el token
+
+El token se muestra en la consola al crear el usuario.
 
 ### Registro de Usuarios
 
@@ -192,8 +193,9 @@ Los administradores pueden gestionar usuarios desde `/admin/users`:
 ## Scripts Disponibles
 
 ```bash
-npm start        # Inicia el servidor en modo producción
-npm run dev      # Inicia el servidor en modo desarrollo con nodemon
+npm start            # Inicia el servidor en modo producción
+npm run dev          # Inicia el servidor en modo desarrollo con nodemon
+npm run create-admin # Crea/actualiza el usuario administrador con token SHA-1
 ```
 
 ## Límites
