@@ -123,7 +123,7 @@ function getFilesFromDirectory(user, folderPath = '') {
                 type = 'image';
             } else if (['mp4', 'avi', 'mov', 'mkv', 'webm'].includes(ext)) {
                 type = 'video';
-            } else if (['mp3', 'wav', 'ogg', 'flac'].includes(ext)) {
+            } else if (['mp3', 'wav', 'ogg', 'oga', 'flac', 'm4a', 'aac'].includes(ext)) {
                 type = 'audio';
             } else if (['pdf'].includes(ext)) {
                 type = 'pdf';

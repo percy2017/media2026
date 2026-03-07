@@ -458,7 +458,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (fileData.type === 'video') {
             preview.innerHTML = '<video controls playsinline style="width:100%;max-height:140px;"><source src="' + (fileData.url || '') + '" type="video/mp4"></video>';
         } else if (fileData.type === 'audio') {
-            preview.innerHTML = '<audio controls class="w-100" style="width:100%;"><source src="' + (fileData.url || '') + '" type="audio/mpeg"></audio><div class="mt-2 text-center text-muted small">' + (fileData.name || '') + '</div>';
+            preview.innerHTML = '<audio controls class="w-100" style="width:100%;"><source src="' + (fileData.url || '') + '" type="audio/ogg"></audio><div class="mt-2 text-center text-muted small">' + (fileData.name || '') + '</div>';
         } else if (fileData.type === 'pdf') {
             preview.innerHTML = '<iframe src="' + (fileData.url || '') + '" style="width:100%;height:140px;border:none;"></iframe>';
         } else if (fileData.type === 'folder') {
@@ -613,7 +613,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (fileType === 'video') {
             previewContainer.innerHTML = '<video controls autoplay style="max-width:100%;max-height:80vh;"><source src="' + fileUrl + '" type="video/mp4"></video>';
         } else if (fileType === 'audio') {
-            previewContainer.innerHTML = '<audio controls autoplay style="width:100%;max-width:500px;"><source src="' + fileUrl + '" type="audio/mpeg"></audio>';
+            previewContainer.innerHTML = '<audio controls autoplay style="width:100%;max-width:500px;"><source src="' + fileUrl + '" type="audio/ogg"></audio>';
         } else if (fileType === 'pdf') {
             previewContainer.innerHTML = '<iframe src="' + fileUrl + '" style="width:80vw;height:80vh;border:none;"></iframe>';
         }
