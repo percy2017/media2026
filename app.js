@@ -203,19 +203,36 @@ app.get(/\/userfiles\/(.*)/, requireAuth, (req, res) => {
     const user = req.session.user;
     const requestedPath = req.params[0];
     
+    console.log('=== DEBUG ===');
+    console.log('user.ruta:', user.ruta);
+    console.log('requestedPath:', requestedPath);
+    
     if (!user.ruta) {
         return res.status(400).send('Ruta no configurada');
     }
     
-    // La ruta absoluta del usuario
-    const userPath = user.ruta;
+    // La ruta absoluta del usuario - asegurar que termina sin /
+    let userPath = user.ruta;
+    if (userPath.endsWith('/')) {
+        userPath = userPath.slice(0, -1);
+    }
     
     // Combinar la ruta del usuario con la ruta solicitada
     const filePath = join(userPath, requestedPath);
     
+    console.log('userPath:', userPath);
+    console.log('filePath:', filePath);
+    console.log('file exists:', fs.existsSync(filePath));
+    
     // Verificar que el archivo está dentro de la ruta del usuario (seguridad)
     if (!filePath.startsWith(userPath)) {
         return res.status(403).send('Acceso denegado');
+    }
+    
+    // Verificar si el archivo existe
+    if (!fs.existsSync(filePath)) {
+        console.log('ERROR: Archivo no encontrado:', filePath);
+        return res.status(404).send('Archivo no encontrado: ' + filePath);
     }
     
     res.sendFile(filePath);
