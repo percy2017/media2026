@@ -239,7 +239,24 @@ app.get(/\/userfiles\/(.*)/, requireAuth, (req, res) => {
         return res.status(404).send('Archivo no encontrado: ' + filePath);
     }
     
-    res.sendFile(filePath);
+    // Intentar con ruta absoluta
+    console.log('Intentando servir archivo con ruta absoluta...');
+    res.sendFile(filePath, (err) => {
+        if (err) {
+            console.log('Error en sendFile:', err);
+            // Fallback: leer y enviar manualmente
+            console.log('Intentando servir archivo manualmente...');
+            const data = fs.readFileSync(filePath);
+            const ext = filePath.split('.').pop().toLowerCase();
+            const contentType = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : 
+                              ext === 'png' ? 'image/png' : 
+                              ext === 'gif' ? 'image/gif' : 
+                              'application/octet-stream';
+            res.setHeader('Content-Type', contentType);
+            res.setHeader('Content-Length', data.length);
+            res.end(data);
+        }
+    });
 });
 
 // Middleware para verificar autenticación

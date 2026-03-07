@@ -61,7 +61,7 @@ function initializeDatabase() {
         db.prepare(`
             INSERT INTO users (token, name, role, ruta)
             VALUES (?, ?, ?, ?)
-        `).run('admin', 'Administrador', 'admin', 'C:\\Users\\percy\\Desktop\\media2026\\uploads');
+        `).run('admin', 'Administrador', 'admin', '/home/media2026/uploads');
         
         console.log('✓ Usuario administrador creado: token = admin, name = Administrador');
     }
