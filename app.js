@@ -200,14 +200,18 @@ app.use('/uploads', express.static(UPLOAD_DIR, {
 
 // Ruta dinámica para servir archivos desde la ruta absoluta del usuario (usando regex)
 app.get(/\/userfiles\/(.*)/, requireAuth, (req, res) => {
-    const user = req.session.user;
+    const userId = req.session.user.id;
     const requestedPath = req.params[0];
     
+    // Obtener el usuario directamente de la base de datos
+    const user = getUserById(userId);
+    
     console.log('=== DEBUG ===');
-    console.log('user.ruta:', user.ruta);
+    console.log('user from DB:', user);
+    console.log('user.ruta:', user?.ruta);
     console.log('requestedPath:', requestedPath);
     
-    if (!user.ruta) {
+    if (!user || !user.ruta) {
         return res.status(400).send('Ruta no configurada');
     }
     
