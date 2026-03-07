@@ -543,19 +543,136 @@ document.addEventListener('DOMContentLoaded', function() {
             openAttachmentDetails(fileDetails);
         });
         
-        // Double-click to download (for non-folder files)
+        // Double-click to open preview modal (for images/videos)
         card.addEventListener('dblclick', function(e) {
             const fileItem = this.closest('.file-item');
             if (!fileItem) return;
             
             const fileType = fileItem.dataset.type;
-            const fileUrl = fileItem.dataset.url;
             
-            if (fileType !== 'folder' && fileUrl) {
-                window.open(fileUrl, '_blank');
+            // For images and videos, show preview modal
+            if (fileType === 'image' || fileType === 'video') {
+                const allFiles = Array.from(document.querySelectorAll('.file-item')).filter(item => {
+                    return item.dataset.type === 'image' || item.dataset.type === 'video';
+                });
+                const index = allFiles.indexOf(fileItem);
+                showPreviewModal(index);
             }
         });
     });
+    
+    // ============================
+    // Preview Modal (Lightbox)
+    // ============================
+    
+    let currentPreviewIndex = 0;
+    let previewFiles = [];
+    
+    function showPreviewModal(index) {
+        // Filter only viewable files (images and videos)
+        previewFiles = Array.from(document.querySelectorAll('.file-item')).filter(item => {
+            const type = item.dataset.type;
+            return type === 'image' || type === 'video';
+        });
+        
+        if (previewFiles.length === 0) return;
+        
+        currentPreviewIndex = index;
+        updatePreviewContent();
+        
+        const modal = document.getElementById('previewModal');
+        if (modal) {
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+    
+    function updatePreviewContent() {
+        const previewContainer = document.getElementById('previewContent');
+        const previewInfo = document.getElementById('previewInfo');
+        const prevBtn = document.getElementById('previewPrev');
+        const nextBtn = document.getElementById('previewNext');
+        
+        if (!previewContainer || !previewFiles[currentPreviewIndex]) return;
+        
+        const fileItem = previewFiles[currentPreviewIndex];
+        const fileType = fileItem.dataset.type;
+        const fileUrl = fileItem.dataset.url;
+        const fileName = fileItem.dataset.name;
+        
+        // Update navigation buttons
+        if (prevBtn) prevBtn.style.display = previewFiles.length > 1 ? 'flex' : 'none';
+        if (nextBtn) nextBtn.style.display = previewFiles.length > 1 ? 'flex' : 'none';
+        
+        // Build preview content
+        if (fileType === 'image') {
+            previewContainer.innerHTML = '<img src="' + fileUrl + '" alt="' + fileName + '">';
+        } else if (fileType === 'video') {
+            previewContainer.innerHTML = '<video controls autoplay><source src="' + fileUrl + '" type="video/mp4"></video>';
+        }
+        
+        if (previewInfo) {
+            previewInfo.innerHTML = '<h5>' + fileName + '</h5><p class="mb-0 text-white-50">' + (currentPreviewIndex + 1) + ' / ' + previewFiles.length + '</p>';
+        }
+    }
+    
+    window.closePreviewModal = function() {
+        const modal = document.getElementById('previewModal');
+        if (modal) {
+            modal.classList.remove('show');
+            document.body.style.overflow = '';
+            
+            // Stop video if playing
+            const video = modal.querySelector('video');
+            if (video) {
+                video.pause();
+                video.currentTime = 0;
+            }
+        }
+    };
+    
+    window.navigatePreview = function(direction) {
+        currentPreviewIndex += direction;
+        
+        if (currentPreviewIndex < 0) {
+            currentPreviewIndex = previewFiles.length - 1;
+        } else if (currentPreviewIndex >= previewFiles.length) {
+            currentPreviewIndex = 0;
+        }
+        
+        updatePreviewContent();
+    };
+    
+    // Initialize preview modal controls
+    function initPreviewModal() {
+        const modal = document.getElementById('previewModal');
+        if (!modal) return;
+        
+        // Close on background click
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal || e.target.classList.contains('preview-close') || e.target.closest('.preview-close')) {
+                closePreviewModal();
+            }
+        });
+        
+        // Close on escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('show')) {
+                closePreviewModal();
+            }
+            
+            // Arrow navigation
+            if (modal.classList.contains('show')) {
+                if (e.key === 'ArrowLeft') {
+                    navigatePreview(-1);
+                } else if (e.key === 'ArrowRight') {
+                    navigatePreview(1);
+                }
+            }
+        });
+    }
+    
+    initPreviewModal();
     
     // Add click handlers to list rows
     document.querySelectorAll('.file-list-row').forEach(row => {
@@ -594,13 +711,17 @@ document.addEventListener('DOMContentLoaded', function() {
             openAttachmentDetails(fileDetails);
         });
         
-        // Double-click to download
+        // Double-click to open preview modal
         row.addEventListener('dblclick', function(e) {
             const fileType = this.dataset.type;
-            const fileUrl = this.dataset.url;
             
-            if (fileType !== 'folder' && fileUrl) {
-                window.open(fileUrl, '_blank');
+            // For images and videos, show preview modal
+            if (fileType === 'image' || fileType === 'video') {
+                const allFiles = Array.from(document.querySelectorAll('.file-item')).filter(item => {
+                    return item.dataset.type === 'image' || item.dataset.type === 'video';
+                });
+                const index = allFiles.indexOf(this);
+                showPreviewModal(index);
             }
         });
     });
@@ -616,27 +737,46 @@ document.addEventListener('DOMContentLoaded', function() {
             const url = this.href;
             
             if (url && url !== '#') {
-                navigator.clipboard.writeText(url).then(() => {
-                    this.textContent = '¡Copiado!';
-                    showToast('Enlace copiado al portapapeles', 'success');
-                    setTimeout(() => {
-                        this.textContent = 'Copiar enlace';
-                    }, 2000);
-                }).catch(() => {
-                    // Fallback for older browsers
-                    const textArea = document.createElement('textarea');
-                    textArea.value = url;
-                    document.body.appendChild(textArea);
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                    this.textContent = '¡Copiado!';
-                    setTimeout(() => {
-                        this.textContent = 'Copiar enlace';
-                    }, 2000);
-                });
+                // Check if Clipboard API is available
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(url).then(() => {
+                        this.textContent = '¡Copiado!';
+                        showToast('Enlace copiado al portapapeles', 'success');
+                        setTimeout(() => {
+                            this.textContent = 'Copiar enlace';
+                        }, 2000);
+                    }).catch(() => {
+                        // Fallback for errors
+                        copyToClipboardFallback(url, this);
+                    });
+                } else {
+                    // Fallback for browsers without Clipboard API
+                    copyToClipboardFallback(url, this);
+                }
             }
         });
+    }
+    
+    // Fallback function for copying to clipboard
+    function copyToClipboardFallback(url, element) {
+        const textArea = document.createElement('textarea');
+        textArea.value = url;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-9999px';
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            element.textContent = '¡Copiado!';
+            showToast('Enlace copiado al portapapeles', 'success');
+        } catch (err) {
+            element.textContent = 'Error';
+            showToast('Error al copiar enlace', 'error');
+        }
+        document.body.removeChild(textArea);
+        setTimeout(() => {
+            element.textContent = 'Copiar enlace';
+        }, 2000);
     }
     
     // ============================

@@ -293,6 +293,21 @@
         </div>
     </div>
     
+    <!-- Preview Modal (Lightbox) -->
+    <div class="preview-modal" id="previewModal">
+        <button class="preview-close" onclick="closePreviewModal()" title="Cerrar (Esc)">
+            <i class="bi bi-x-lg"></i>
+        </button>
+        <button class="preview-nav prev" onclick="navigatePreview(-1)" title="Anterior (←)">
+            <i class="bi bi-chevron-left"></i>
+        </button>
+        <div class="preview-content" id="previewContent"></div>
+        <button class="preview-nav next" onclick="navigatePreview(1)" title="Siguiente (→)">
+            <i class="bi bi-chevron-right"></i>
+        </button>
+        <div class="preview-info" id="previewInfo"></div>
+    </div>
+
     <!-- Right Sidebar - Attachment Details -->
     <div class="attachment-details" id="attachmentDetails">
         <button class="attachment-details-close" onclick="closeAttachmentDetails()" title="Cerrar (Esc)">
