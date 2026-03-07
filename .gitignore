@@ -1,0 +1,24 @@
+# ========================================
+# Git Ignore - Media2026
+# ========================================
+
+# Variables de entorno
+.env
+
+# Directorio de uploads (archivos subidos por usuarios)
+uploads/
+
+# Node_modules
+node_modules/
+
+# Logs
+logs
+*.log
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Base de datos SQLite
+*.db
+*.sqlite
