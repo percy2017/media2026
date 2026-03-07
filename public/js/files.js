@@ -456,13 +456,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (fileData.type === 'image') {
             preview.innerHTML = '<img src="' + (fileData.url || '') + '" alt="' + (fileData.name || '') + '">';
         } else if (fileData.type === 'video') {
-            preview.innerHTML = '<video controls playsinline><source src="' + (fileData.url || '') + '" type="video/mp4"></video>';
+            preview.innerHTML = '<video controls playsinline style="width:100%;max-height:140px;"><source src="' + (fileData.url || '') + '" type="video/mp4"></video>';
         } else if (fileData.type === 'audio') {
-            preview.innerHTML = '<audio controls class="w-100"><source src="' + (fileData.url || '') + '" type="audio/mpeg"></audio>';
+            preview.innerHTML = '<audio controls class="w-100" style="width:100%;"><source src="' + (fileData.url || '') + '" type="audio/mpeg"></audio><div class="mt-2 text-center text-muted small">' + (fileData.name || '') + '</div>';
+        } else if (fileData.type === 'pdf') {
+            preview.innerHTML = '<iframe src="' + (fileData.url || '') + '" style="width:100%;height:140px;border:none;"></iframe>';
         } else if (fileData.type === 'folder') {
             preview.innerHTML = '<i class="bi bi-folder-fill" style="font-size: 5rem; color: #f6a235;"></i>';
         } else {
-            preview.innerHTML = '<i class="bi bi-file-earmark-fill" style="font-size: 5rem; color: #8a8a8a;"></i>';
+            preview.innerHTML = '<i class="bi bi-file-earmark-fill" style="font-size: 5rem; color: #8a8a8a;"></i><div class="mt-2 text-center text-muted small">' + (fileData.name || '') + '</div>';
         }
         
         // Open sidebar with animation
@@ -543,17 +545,18 @@ document.addEventListener('DOMContentLoaded', function() {
             openAttachmentDetails(fileDetails);
         });
         
-        // Double-click to open preview modal (for images/videos)
+        // Double-click to open preview modal (for images/videos/audio/pdf)
         card.addEventListener('dblclick', function(e) {
             const fileItem = this.closest('.file-item');
             if (!fileItem) return;
             
             const fileType = fileItem.dataset.type;
             
-            // For images and videos, show preview modal
-            if (fileType === 'image' || fileType === 'video') {
+            // For previewable files, show preview modal
+            if (fileType === 'image' || fileType === 'video' || fileType === 'audio' || fileType === 'pdf') {
                 const allFiles = Array.from(document.querySelectorAll('.file-item')).filter(item => {
-                    return item.dataset.type === 'image' || item.dataset.type === 'video';
+                    const t = item.dataset.type;
+                    return t === 'image' || t === 'video' || t === 'audio' || t === 'pdf';
                 });
                 const index = allFiles.indexOf(fileItem);
                 showPreviewModal(index);
@@ -569,10 +572,10 @@ document.addEventListener('DOMContentLoaded', function() {
     let previewFiles = [];
     
     function showPreviewModal(index) {
-        // Filter only viewable files (images and videos)
+        // Filter viewable files (images, videos, audio, pdf)
         previewFiles = Array.from(document.querySelectorAll('.file-item')).filter(item => {
             const type = item.dataset.type;
-            return type === 'image' || type === 'video';
+            return type === 'image' || type === 'video' || type === 'audio' || type === 'pdf';
         });
         
         if (previewFiles.length === 0) return;
@@ -604,11 +607,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (prevBtn) prevBtn.style.display = previewFiles.length > 1 ? 'flex' : 'none';
         if (nextBtn) nextBtn.style.display = previewFiles.length > 1 ? 'flex' : 'none';
         
-        // Build preview content
+        // Build preview content based on type
         if (fileType === 'image') {
             previewContainer.innerHTML = '<img src="' + fileUrl + '" alt="' + fileName + '">';
         } else if (fileType === 'video') {
-            previewContainer.innerHTML = '<video controls autoplay><source src="' + fileUrl + '" type="video/mp4"></video>';
+            previewContainer.innerHTML = '<video controls autoplay style="max-width:100%;max-height:80vh;"><source src="' + fileUrl + '" type="video/mp4"></video>';
+        } else if (fileType === 'audio') {
+            previewContainer.innerHTML = '<audio controls autoplay style="width:100%;max-width:500px;"><source src="' + fileUrl + '" type="audio/mpeg"></audio>';
+        } else if (fileType === 'pdf') {
+            previewContainer.innerHTML = '<iframe src="' + fileUrl + '" style="width:80vw;height:80vh;border:none;"></iframe>';
         }
         
         if (previewInfo) {
@@ -715,10 +722,11 @@ document.addEventListener('DOMContentLoaded', function() {
         row.addEventListener('dblclick', function(e) {
             const fileType = this.dataset.type;
             
-            // For images and videos, show preview modal
-            if (fileType === 'image' || fileType === 'video') {
+            // For previewable files, show preview modal
+            if (fileType === 'image' || fileType === 'video' || fileType === 'audio' || fileType === 'pdf') {
                 const allFiles = Array.from(document.querySelectorAll('.file-item')).filter(item => {
-                    return item.dataset.type === 'image' || item.dataset.type === 'video';
+                    const t = item.dataset.type;
+                    return t === 'image' || t === 'video' || t === 'audio' || t === 'pdf';
                 });
                 const index = allFiles.indexOf(this);
                 showPreviewModal(index);

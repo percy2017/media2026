@@ -10,7 +10,7 @@ Sistema de gestión de archivos multimedia multi-usuario construido con Express.
 - **Vistas Flexibles**: Vista de cuadrícula y lista
 - **Organización por Carpetas**: Crea y navega por carpetas
 - **Búsqueda**: Encuentra archivos rápidamente
-- **Previsualización**: Ver imágenes y videos en modal integrado
+- **Previsualización**: Ver imágenes, videos, audio y PDF en modal integrado y sidebar
 - **Autenticación Segura**: Sistema de token de acceso con sesiones
 - **Multi-usuario**: Múltiples usuarios con roles diferenciados
 - **Roles**: Administrador y Cliente

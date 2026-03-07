@@ -125,6 +125,8 @@ function getFilesFromDirectory(user, folderPath = '') {
                 type = 'video';
             } else if (['mp3', 'wav', 'ogg', 'flac'].includes(ext)) {
                 type = 'audio';
+            } else if (['pdf'].includes(ext)) {
+                type = 'pdf';
             }
             
             // Construir URL usando /userfiles/ para rutas absolutas
