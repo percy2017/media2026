@@ -34,7 +34,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const folderName = folderNameInput ? folderNameInput.value.trim() : '';
         
         if (!folderName) {
-            alert('Por favor ingresa un nombre para la carpeta');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campo requerido',
+                text: 'Por favor ingresa un nombre para la carpeta'
+            });
             return;
         }
         
@@ -54,17 +58,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (modal) modal.hide();
                 
                 // Show success briefly then reload
-                showToast('Carpeta creada exitosamente', 'success');
-                setTimeout(() => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Éxito',
+                    text: 'Carpeta creada exitosamente',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
                     window.location.reload();
-                }, 500);
+                });
             } else {
-                alert(data.error || 'Error al crear la carpeta');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.error || 'Error al crear la carpeta'
+                });
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Error al crear la carpeta');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al crear la carpeta'
+            });
         });
     };
     
@@ -175,13 +192,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Success - reload page
                 window.location.reload();
             } else {
-                showToast('Error al subir archivos', 'error');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al subir archivos'
+                });
             }
         });
         
         xhr.addEventListener('error', function() {
             progressBar.style.display = 'none';
-            showToast('Error al subir archivos', 'error');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al subir archivos'
+            });
         });
         
         // Get current folder from URL
@@ -320,31 +345,72 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // ============================
-    // Delete File Function
+    // Delete File/Folder Function
     // ============================
     
-    window.deleteFile = function(filename) {
+    window.deleteFile = function(type, filename) {
         if (!filename) return;
         
-        if (confirm('¿Estás seguro de que quieres eliminar "' + filename + '"?')) {
-            fetch('/delete/' + encodeURIComponent(filename), {
-                method: 'DELETE'
-            })
-            .then(response => {
-                if (response.ok) {
-                    showToast('Archivo eliminado', 'success');
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 500);
-                } else {
-                    showToast('Error al eliminar archivo', 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showToast('Error al eliminar archivo', 'error');
-            });
-        }
+        // Get current folder from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentFolder = urlParams.get('folder') || '';
+        
+        // Build the full path
+        let fullPath = currentFolder ? currentFolder + '/' + filename : filename;
+        
+        const title = type === 'folder' ? 'Eliminar carpeta' : 'Eliminar archivo';
+        const message = type === 'folder' 
+            ? '¿Estás seguro de que quieres eliminar la carpeta "' + filename + '" y todo su contenido? Esta acción no se puede deshacer.' 
+            : '¿Estás seguro de que quieres eliminar "' + filename + '"?';
+        
+        Swal.fire({
+            title: title,
+            text: message,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d63638',
+            cancelButtonColor: '#50575e',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('/delete', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ path: fullPath })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Eliminado',
+                            text: type === 'folder' ? 'Carpeta eliminada' : 'Archivo eliminado',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.error || 'Error al eliminar'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error al eliminar'
+                    });
+                });
+            }
+        });
     };
     
     // ============================
@@ -382,7 +448,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (detailDelete) {
             detailDelete.onclick = function() {
                 closeAttachmentDetails();
-                setTimeout(() => deleteFile(fileData.name), 100);
+                setTimeout(() => deleteFile(fileData.type, fileData.name), 100);
             };
         }
         

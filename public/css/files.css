@@ -842,3 +842,25 @@ body {
 .file-card {
     position: relative;
 }
+
+/* Grid View Actions */
+.file-grid-actions {
+    display: flex;
+    gap: 0.25rem;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.file-card:hover .file-grid-actions {
+    opacity: 1;
+}
+
+.file-grid-actions .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+.file-grid-actions .btn i {
+    font-size: 0.875rem;
+}

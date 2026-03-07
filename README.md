@@ -174,16 +174,17 @@ Los administradores pueden gestionar usuarios desde `/admin/users`:
 - Haz clic en una carpeta para entrar
 - Usa el breadcrumb para volver atrás
 
-### Eliminar Archivos
+### Eliminar Archivos/Carpetas
 
-1. Haz clic en el botón de eliminar (icono de papelera)
-2. Confirma la eliminación
+1. Haz clic en el botón de eliminar (icono de papelera) en la vista de cuadrícula o lista
+2. Confirma la eliminación en el diálogo de SweetAlert2
+3. Las carpetas se eliminan con todo su contenido
 
 ## Tecnologías
 
 - **Backend**: Express.js 5
 - **Motor de Plantillas**: EJS 4
-- **Frontend**: Bootstrap 5, Bootstrap Icons
+- **Frontend**: Bootstrap 5, Bootstrap Icons, SweetAlert2
 - **JavaScript**: ES6+ (Vanilla)
 - **Base de Datos**: SQLite (better-sqlite3)
 - **Gestión de Archivos**: Multer

@@ -30,14 +30,15 @@ const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         // Get folder from form data or query
         const folder = req.body.folder || req.query.folder || '';
-        // User-specific directory
-        const userId = req.session.user?.id;
+        // User's configured directory (ruta)
+        const userRuta = req.session.user?.ruta;
         
-        if (!userId) {
-            return cb(new Error('Usuario no autenticado'));
+        if (!userRuta) {
+            return cb(new Error('Ruta no configurada. Por favor configura tu directorio en Mi Perfil'));
         }
         
-        let uploadPath = join(UPLOAD_DIR, String(userId));
+        // Usar la ruta del usuario directamente
+        let uploadPath = userRuta;
         
         if (folder) {
             uploadPath = join(uploadPath, folder);
@@ -439,7 +440,7 @@ app.get('/files', requireAuth, (req, res) => {
 // Ruta /upload - Subir archivos (protegida)
 app.post('/upload', requireAuth, upload.array('files', 20), (req, res) => {
     const user = req.session.user;
-    const folder = req.query.folder || req.body.folder || '';
+    const folder = req.body.folder || req.query.folder || '';
     
     const files = getFilesFromDirectory(user, folder);
     
@@ -453,22 +454,29 @@ app.post('/upload', requireAuth, upload.array('files', 20), (req, res) => {
     });
 });
 
-// Ruta /delete/:filename - Eliminar archivo (protegida)
-app.delete('/delete/:filename', requireAuth, (req, res) => {
-    const filename = req.params.filename;
+// Ruta /delete - Eliminar archivo o carpeta (protegida)
+app.delete('/delete', requireAuth, express.json(), (req, res) => {
+    const { path: deletePath } = req.body;
     const user = req.session.user;
     const userDir = getUserUploadDir(user);
-    const filePath = join(userDir, filename);
+    const filePath = join(userDir, deletePath);
     
     try {
         if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
+            const stats = fs.statSync(filePath);
+            if (stats.isDirectory()) {
+                // Es una carpeta - eliminarla recursively
+                fs.rmSync(filePath, { recursive: true, force: true });
+            } else {
+                // Es un archivo - eliminarlo
+                fs.unlinkSync(filePath);
+            }
             res.json({ success: true });
         } else {
             res.status(404).json({ error: 'Archivo no encontrado' });
         }
     } catch (error) {
-        res.status(500).json({ error: 'Error al eliminar archivo' });
+        res.status(500).json({ error: 'Error al eliminar: ' + error.message });
     }
 });
 
