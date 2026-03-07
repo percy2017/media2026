@@ -127,6 +127,8 @@ function getFilesFromDirectory(user, folderPath = '') {
                 type = 'audio';
             } else if (['pdf'].includes(ext)) {
                 type = 'pdf';
+            } else if (TEXT_EXTENSIONS.includes(ext)) {
+                type = 'text';
             }
             
             // Construir URL usando /userfiles/ para rutas absolutas
@@ -282,6 +284,186 @@ const getUserUploadDir = (user) => {
     // Usar la ruta absoluta directamente (no combinar con UPLOAD_DIR)
     return user.ruta;
 };
+
+// ========================================
+// RUTAS DE API - Editor de Texto
+// ========================================
+
+// Lista de extensiones de archivos de texto permitidos para editar
+const TEXT_EXTENSIONS = [
+    'txt', 'log', 'csv', 'ini', 'cfg', 'conf', 'config',
+    'json', 'xml', 'yaml', 'yml',
+    'html', 'htm', 'css', 'scss', 'sass', 'less',
+    'js', 'ts', 'mjs', 'cjs', 'jsx', 'tsx',
+    'py', 'pyw',
+    'java', 'c', 'cpp', 'h', 'hpp', 'cs',
+    'go', 'rs', 'php', 'rb', 'swift', 'kt', 'scala',
+    'sh', 'bash', 'zsh', 'bat', 'ps1', 'cmd',
+    'sql', 'ddl', 'dml',
+    'md', 'markdown', 'tex', 'rst',
+    'toml', 'env', 'gitignore', 'dockerfile',
+    'api', 'vue', 'svelte', 'jsx', 'tsx'
+];
+
+// Función para verificar si un archivo es de texto
+function isTextFile(filename) {
+    const ext = filename.split('.').pop().toLowerCase();
+    return TEXT_EXTENSIONS.includes(ext);
+}
+
+// Función para obtener el modo de CodeMirror según la extensión
+function getCodeMirrorMode(filename) {
+    const ext = filename.split('.').pop().toLowerCase();
+    const modeMap = {
+        'js': 'javascript', 'mjs': 'javascript', 'cjs': 'javascript',
+        'ts': 'javascript', 'tsx': 'javascript', 'jsx': 'javascript',
+        'json': { name: 'javascript', json: true },
+        'html': 'htmlmixed', 'htm': 'htmlmixed',
+        'css': 'css', 'scss': 'css', 'sass': 'css', 'less': 'css',
+        'xml': 'xml', 'svg': 'xml',
+        'yaml': 'yaml', 'yml': 'yaml',
+        'py': 'python', 'pyw': 'python',
+        'java': 'java',
+        'c': 'clike', 'cpp': 'clike', 'h': 'clike', 'hpp': 'clike',
+        'cs': 'clike',
+        'go': 'go',
+        'rs': 'rust',
+        'php': 'php',
+        'rb': 'ruby',
+        'swift': 'swift',
+        'kt': 'kotlin', 'scala': 'scala',
+        'sh': 'shell', 'bash': 'shell', 'zsh': 'shell', 'bat': 'shell', 'ps1': 'powershell', 'cmd': 'shell',
+        'sql': 'sql',
+        'md': 'markdown', 'markdown': 'markdown',
+        'tex': 'stex',
+        'rst': 'rst',
+        'toml': 'toml',
+        'ini': 'properties', 'cfg': 'properties', 'conf': 'properties', 'config': 'properties',
+        'env': 'shell', 'gitignore': 'shell',
+        'dockerfile': 'dockerfile',
+        'vue': 'htmlmixed', 'svelte': 'htmlmixed'
+    };
+    return modeMap[ext] || 'text';
+}
+
+// Ruta GET /api/file/read - Lee contenido de archivo de texto
+app.get('/api/file/read', requireAuth, express.json(), (req, res) => {
+    const { file } = req.query;
+    
+    if (!file) {
+        return res.status(400).json({ error: 'Archivo no especificado' });
+    }
+    
+    const user = req.session.user;
+    const userDir = getUserUploadDir(user);
+    const filePath = join(userDir, file);
+    
+    // Verificar que el archivo está dentro de la ruta del usuario (seguridad)
+    if (!filePath.startsWith(userDir)) {
+        return res.status(403).json({ error: 'Acceso denegado' });
+    }
+    
+    // Verificar que el archivo existe
+    if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ error: 'Archivo no encontrado' });
+    }
+    
+    // Verificar que es un archivo de texto permitido
+    const fileName = file.split('/').pop();
+    if (!isTextFile(fileName)) {
+        return res.status(400).json({ error: 'Tipo de archivo no editable' });
+    }
+    
+    try {
+        const content = fs.readFileSync(filePath, 'utf-8');
+        const stats = fs.statSync(filePath);
+        const mode = getCodeMirrorMode(fileName);
+        
+        res.json({
+            success: true,
+            content: content,
+            filename: fileName,
+            path: file,
+            size: formatFileSize(stats.size),
+            mode: mode,
+            lastModified: stats.mtime.toLocaleString('es-ES')
+        });
+    } catch (error) {
+        console.error('Error al leer archivo:', error);
+        res.status(500).json({ error: 'Error al leer el archivo: ' + error.message });
+    }
+});
+
+// Ruta POST /api/file/save - Guarda contenido de archivo de texto
+app.post('/api/file/save', requireAuth, express.json(), (req, res) => {
+    const { file, content } = req.body;
+    
+    if (!file) {
+        return res.status(400).json({ error: 'Archivo no especificado' });
+    }
+    
+    if (content === undefined) {
+        return res.status(400).json({ error: 'Contenido no especificado' });
+    }
+    
+    const user = req.session.user;
+    const userDir = getUserUploadDir(user);
+    const filePath = join(userDir, file);
+    
+    // Verificar que el archivo está dentro de la ruta del usuario (seguridad)
+    if (!filePath.startsWith(userDir)) {
+        return res.status(403).json({ error: 'Acceso denegado' });
+    }
+    
+    // Verificar que el archivo existe
+    if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ error: 'Archivo no encontrado' });
+    }
+    
+    // Verificar que es un archivo de texto permitido
+    const fileName = file.split('/').pop();
+    if (!isTextFile(fileName)) {
+        return res.status(400).json({ error: 'Tipo de archivo no editable' });
+    }
+    
+    try {
+        fs.writeFileSync(filePath, content, 'utf-8');
+        res.json({ success: true, message: 'Archivo guardado exitosamente' });
+    } catch (error) {
+        console.error('Error al guardar archivo:', error);
+        res.status(500).json({ error: 'Error al guardar el archivo: ' + error.message });
+    }
+});
+
+// Ruta GET /editor - Vista del editor de texto
+app.get('/editor', requireAuth, (req, res) => {
+    const { file } = req.query;
+    
+    if (!file) {
+        return res.redirect('/files');
+    }
+    
+    const user = req.session.user;
+    const userDir = getUserUploadDir(user);
+    const filePath = join(userDir, file);
+    const fileName = file.split('/').pop();
+    
+    // Verificar que el archivo es de texto
+    if (!isTextFile(fileName)) {
+        return res.redirect('/files?folder=' + encodeURIComponent(file.replace(fileName, '').replace(/\/$/, '')));
+    }
+    
+    const mode = getCodeMirrorMode(fileName);
+    
+    res.render('editor', {
+        user: req.session.user,
+        titulo: 'Editar: ' + fileName,
+        file: file,
+        filename: fileName,
+        mode: mode,
+        currentFolder: file.replace(fileName, '').replace(/\/$/, '')
+    });
+});
 
 // ========================================
 // RUTAS

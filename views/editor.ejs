@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= titulo %> - Media2026</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/lint/lint.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/matchesonscrollbar.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/dialog/dialog.min.css">
+    <!-- Custom CSS -->
+    <link href="/css/editor.css" rel="stylesheet">
+</head>
+<body class="editor-body">
+    <!-- Header -->
+    <header class="editor-header">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center py-2">
+                <div class="d-flex align-items-center gap-3">
+                    <a href="/files<%= currentFolder ? '?folder=' + currentFolder : '' %>" class="btn btn-outline-light btn-sm">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </a>
+                    <div class="editor-title">
+                        <i class="bi bi-file-earmark-code text-info"></i>
+                        <span class="text-white"><%= filename %></span>
+                        <span class="badge bg-secondary ms-2" id="languageBadge"><%= mode %></span>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="text-muted small" id="lastModified">
+                        <i class="bi bi-clock me-1"></i>
+                    </span>
+                    <button class="btn btn-outline-light btn-sm" onclick="formatCode()" title="Formatear código">
+                        <i class="bi bi-code-square"></i> Formatear
+                    </button>
+                    <button class="btn btn-success btn-sm" onclick="saveFile()" title="Guardar (Ctrl+S)">
+                        <i class="bi bi-check-lg me-1"></i> Guardar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Editor Toolbar -->
+    <div class="editor-toolbar">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center gap-2">
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="undo()" title="Deshacer (Ctrl+Z)">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="redo()" title="Rehacer (Ctrl+Y)">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                </div>
+                <div class="vr"></div>
+                <button class="btn btn-sm btn-outline-secondary" onclick="find()" title="Buscar (Ctrl+F)">
+                    <i class="bi bi-search"></i> Buscar
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="replace()" title="Reemplazar (Ctrl+H)">
+                    <i class="bi bi-arrow-repeat"></i> Reemplazar
+                </button>
+                <div class="vr"></div>
+                <button class="btn btn-sm btn-outline-secondary" onclick="toggleComment()" title="Comentar/Líneas (Ctrl+/)">
+                    <i class="bi bi-chat-left-quote"></i> Comentar
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="indentMore()" title="Aumentar sangría (Tab)">
+                    <i class="bi bi-layout-indent-start"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="indentLess()" title="Reducir sangría (Shift+Tab)">
+                    <i class="bi bi-layout-indent-end"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Editor Container -->
+    <div class="editor-container">
+        <textarea id="codeEditor"><!-- Content will be loaded via JavaScript --></textarea>
+    </div>
+
+    <!-- Footer Status Bar -->
+    <footer class="editor-footer">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="text-muted">
+                        <i class="bi bi-file-earmark-text me-1"></i>
+                        <span id="fileSize">Cargando...</span>
+                    </span>
+                    <span class="text-success" id="saveStatus">
+                        <i class="bi bi-check-circle me-1"></i>Sin cambios
+                    </span>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="text-muted" id="cursorPosition">
+                        <i class="bi bi-cursor me-1"></i>Ln 1, Col 1
+                    </span>
+                    <span class="text-muted" id="encoding">
+                        <i class="bi bi-code-slash me-1"></i>UTF-8
+                    </span>
+                    <span class="text-muted" id="lineEnding">
+                        <i class="bi bi-paragraph me-1"></i>LF
+                    </span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- CodeMirror JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/yaml/yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/shell/shell.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/go/go.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/rust/rust.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/php/php.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/ruby/ruby.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/swift/swift.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/kotlin/kotlin.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/powershell/powershell.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/dockerfile/dockerfile.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/properties/properties.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sass/sass.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/search.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/searchcursor.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/jump-to-line.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/dialog/dialog.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/scroll/annotatescrollbar.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/matchesonscrollbar.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/scroll/simplescrollbars.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Custom JS -->
+    <script src="/js/editor.js"></script>
+    
+    <script>
+        // Pass server-side data to JavaScript
+        window.editorConfig = {
+            file: '<%= file %>',
+            filename: '<%= filename %>',
+            mode: '<%= mode %>',
+            currentFolder: '<%= currentFolder %>'
+        };
+    </script>
+</body>
+</html>

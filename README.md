@@ -119,6 +119,14 @@ media2026/
 | GET | `/profile` | Perfil de usuario |
 | POST | `/profile/update` | Actualizar perfil |
 
+### Rutas del Editor de Texto
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/editor?file=ruta` | Editor de código profesional |
+| GET | `/api/file/read?file=ruta` | Lee contenido de archivo de texto |
+| POST | `/api/file/save` | Guarda contenido de archivo de texto |
+
 ### Rutas de Administrador (solo admin)
 
 | Método | Ruta | Descripción |
@@ -182,6 +190,38 @@ Los administradores pueden gestionar usuarios desde `/admin/users`:
 2. Confirma la eliminación en el diálogo de SweetAlert2
 3. Las carpetas se eliminan con todo su contenido
 
+### Editar Archivos de Texto
+
+Media2026 incluye un editor de código profesional integrado con CodeMirror para editar archivos de texto directamente desde el navegador.
+
+1. **Selecciona un archivo de texto**: Haz clic en cualquier archivo de texto (txt, json, md, js, html, css, etc.)
+2. **Abre el sidebar**: Se mostrará el panel de detalles del archivo
+3. **Haz clic en "Editar"**: Si el archivo es de texto, verás un botón verde "Editar"
+4. **Edita el contenido**: Se abrirá el editor profesional con resaltado de sintaxis
+5. **Guarda los cambios**: Usa el botón "Guardar" o presiona Ctrl+S
+
+#### Características del Editor
+
+- **Tema oscuro Dracula** con resaltado de sintaxis avanzado
+- **Números de línea** y indicador de posición del cursor
+- **Auto-cierre de brackets** y comillas
+- **Búsqueda y reemplazar** (Ctrl+F / Ctrl+H)
+- **Atajos de teclado** (Guardar: Ctrl+S, Deshacer: Ctrl+Z)
+- **Formateo de código** para JSON y otros lenguajes
+- **Más de 40 extensiones soportadas**: txt, json, md, js, ts, html, css, scss, python, java, c, cpp, go, rust, php, ruby, sql, yaml, y más
+
+#### Extensiones Soportadas
+
+| Categoría | Extensiones |
+|-----------|-------------|
+| Básicas | txt, log, csv, ini, cfg, conf |
+| Datos | json, xml, yaml |
+| Web | html, css, scss, sass, less |
+| Script | js, ts, py, sh, bat, ps1 |
+| Código | java, c, cpp, h, php, go, rust, ruby |
+| Documentos | md, markdown |
+| SQL | sql |
+
 ## Tecnologías
 
 - **Backend**: Express.js 5
@@ -192,6 +232,7 @@ Los administradores pueden gestionar usuarios desde `/admin/users`:
 - **Gestión de Archivos**: Multer
 - **Sesiones**: express-session
 - **Variables de Entorno**: dotenv
+- **Editor de Código**: CodeMirror 5 (tema Dracula)
 
 ## Scripts Disponibles
 

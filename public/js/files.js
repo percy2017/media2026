@@ -452,6 +452,22 @@ document.addEventListener('DOMContentLoaded', function() {
             };
         }
         
+        // Handle Edit button for text files
+        const textActions = document.getElementById('textActions');
+        const detailEdit = document.getElementById('detailEdit');
+        
+        if (textActions && detailEdit) {
+            if (fileData.type === 'text') {
+                textActions.style.display = 'block';
+                // Build the file path for editor
+                const currentFolder = new URLSearchParams(window.location.search).get('folder') || '';
+                const filePath = currentFolder ? currentFolder + '/' + fileData.name : fileData.name;
+                detailEdit.href = '/editor?file=' + encodeURIComponent(filePath);
+            } else {
+                textActions.style.display = 'none';
+            }
+        }
+        
         // Show preview based on type
         if (fileData.type === 'image') {
             preview.innerHTML = '<img src="' + (fileData.url || '') + '" alt="' + (fileData.name || '') + '">';
