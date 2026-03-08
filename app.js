@@ -131,7 +131,7 @@ function getFilesFromDirectory(user, folderPath = '') {
                 type = 'text';
             }
             
-            // Construir URL usando /userfiles/ para rutas absolutas
+            // Construir URL pública usando /userfiles/[userId]/[filename]
             const urlPath = folderPath ? `${folderPath}/${item}` : `${item}`;
             
             return {
@@ -139,7 +139,7 @@ function getFilesFromDirectory(user, folderPath = '') {
                 type: type,
                 size: formatFileSize(stats.size),
                 date: stats.birthtime.toLocaleDateString('es-ES'),
-                url: `/userfiles/${urlPath}`
+                url: `/userfiles/${user.id}/${urlPath}`
             };
         });
         
@@ -202,12 +202,21 @@ app.use('/uploads', express.static(UPLOAD_DIR, {
     }
 }));
 
-// Ruta dinámica para servir archivos desde la ruta absoluta del usuario (usando regex)
-app.get(/\/userfiles\/(.*)/, requireAuth, (req, res) => {
-    const userId = req.session.user.id;
-    const requestedPath = req.params[0];
+// Ruta dinámica para servir archivos públicos (sin auth)
+// Formato: /userfiles/[userId]/[filename]
+// Esto permite compartir enlaces públicos de archivos subidos
+app.get(/\/userfiles\/(.+)/, (req, res) => {
+    const pathParts = req.params[0].split('/');
     
-    // Obtener el usuario directamente de la base de datos
+    // El primer segmento es el userId
+    if (pathParts.length < 2) {
+        return res.status(400).send('Formato de URL inválido. Use: /userfiles/[userId]/[filename]');
+    }
+    
+    const userId = parseInt(pathParts[0]);
+    const requestedPath = pathParts.slice(1).join('/');
+    
+    // Obtener el usuario de la base de datos
     const user = getUserById(userId);
     
     console.log('=== DEBUG ===');
@@ -292,7 +301,7 @@ const getUserUploadDir = (user) => {
 // Lista de extensiones de archivos de texto permitidos para editar
 const TEXT_EXTENSIONS = [
     'txt', 'log', 'csv', 'ini', 'cfg', 'conf', 'config',
-    'json', 'xml', 'yaml', 'yml',
+    'json', 'jsonl', 'xml', 'yaml', 'yml',
     'html', 'htm', 'css', 'scss', 'sass', 'less',
     'js', 'ts', 'mjs', 'cjs', 'jsx', 'tsx',
     'py', 'pyw',
@@ -318,6 +327,7 @@ function getCodeMirrorMode(filename) {
         'js': 'javascript', 'mjs': 'javascript', 'cjs': 'javascript',
         'ts': 'javascript', 'tsx': 'javascript', 'jsx': 'javascript',
         'json': { name: 'javascript', json: true },
+        'jsonl': { name: 'javascript', json: true },
         'html': 'htmlmixed', 'htm': 'htmlmixed',
         'css': 'css', 'scss': 'css', 'sass': 'css', 'less': 'css',
         'xml': 'xml', 'svg': 'xml',
